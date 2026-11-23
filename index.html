@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PayMora Bank</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Arial, sans-serif; }
+body { background: #f2f4f7; display: flex; justify-content: center; }
+.phone { width: 100%; max-width: 400px; background: #f2f4f7; min-height: 100vh; position: relative; padding-bottom: 90px; }
+.hidden { display: none !important; }
+.login-card { background: white; margin: 20px; padding: 26px; border-radius: 20px; text-align: center; }
+.logo-img { width: 140px; margin: 0 auto 6px; display: block; border-radius: 12px; }
+input, select { width: 100%; padding: 14px; margin: 8px 0; border-radius: 12px; border: 1px solid #ddd; font-size: 15px; background: white; color: #111; }
+.btn { width: 100%; padding: 14px; background: #1e3658; color: white; border: none; border-radius: 12px; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 10px; display:flex; align-items:center; justify-content:center; gap:8px; }
+.btn:disabled { background: #ccc; }
+.btn-green { background: #00a651; }
+.btn-light { background: #eef0f5; color: #1e3658; }
+.btn-red { background: #c62828; }
+.auth-tabs { display:flex; gap:8px; margin:14px 0; }
+.auth-tab { flex:1; padding:11px; border-radius:12px; border:2px solid #eee; cursor:pointer; font-weight:bold; background:#f8f9ff; }
+.auth-tab.active { border-color:#1e3658; background:#eef0f5; }
+.header { background: #1e3658; color: white; padding: 20px; border-radius: 0 0 25px 25px; }
+.header-top { display: flex; justify-content: space-between; align-items: center; }
+.balance-box { margin-top: 20px; }
+.balance-box h1 { font-size: 32px; margin: 5px 0; }
+.acc-num { background: rgba(255,255,255,0.18); display: inline-block; padding: 6px 12px; border-radius: 20px; font-size: 12px; margin-top: 5px; cursor: pointer; }
+.actions { display: flex; justify-content: space-around; background: white; margin: -20px 15px 15px; padding: 18px 10px; border-radius: 18px; box-shadow: 0 3px 10px rgba(0,0,0,0.08); position: relative; z-index: 2; flex-wrap: wrap; gap: 8px; }
+.action-item { text-align: center; cursor: pointer; flex: 1; min-width: 55px; font-size:12px; }
+.action-icon { width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 5px; }
+.action-icon svg { width:24px; height:24px; }
+.section { padding: 15px; }
+.card { background: white; padding: 16px; border-radius: 16px; margin-bottom: 12px; }
+.trans-item { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #f0f0f0; cursor: pointer; gap:8px; }
+.amount-neg { color: #d32f2f; font-weight: bold; }
+.amount-pos { color: #00a651; font-weight: bold; }
+.page-title { padding: 20px 20px 10px; font-size: 20px; font-weight: bold; color: #1e3658; cursor: pointer; }
+.bank-list { display: flex; gap: 8px; flex-wrap: wrap; margin: 10px 0; }
+.bank-chip { padding: 8px 14px; border-radius: 20px; border: 1px solid #ddd; background: white; font-size: 13px; cursor: pointer; display:flex; align-items:center; gap:6px; }
+.bank-chip.active { background: #1e3658; color: white; border-color:#1e3658; }
+.name-box { background: #e8f5e9; padding: 14px; border-radius: 12px; text-align: center; font-weight: bold; color: #2e7d32; margin: 10px 0; display: none; }
+.name-error { background: #ffebee; padding: 14px; border-radius: 12px; text-align: center; font-weight: bold; color: #c62828; margin: 10px 0; display: none; }
+.bottom-nav { position: fixed; bottom: 0; width: 100%; max-width: 400px; background: white; display: flex; justify-content: flex-start; padding: 8px 0 14px; border-top: 1px solid #eee; z-index: 50; overflow-x: auto; scrollbar-width: none; }
+.bottom-nav::-webkit-scrollbar { display: none; }
+.nav-item { text-align: center; cursor: pointer; color: #8a8a9a; font-size: 11px; flex: 0 0 68px; position:relative; padding: 0 4px; }
+.nav-item.active { color: #1e3658; font-weight: bold; }
+.nav-item svg { width:22px; height:22px; display:block; margin:0 auto 3px; }
+.profile-header { background: #1e3658; color: white; padding: 25px; text-align: center; border-radius: 0 0 25px 25px; }
+.menu-item { display: flex; justify-content: space-between; align-items:center; padding: 16px; background: white; margin: 8px 15px; border-radius: 14px; cursor: pointer; }
+.menu-item svg { width:20px; height:20px; }
+.modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); display: flex; align-items: center; justify-content: center; z-index: 100; }
+.modal { background: white; width: 90%; max-width: 350px; padding: 25px; border-radius: 20px; text-align: center; }
+.pin-input { text-align: center; font-size: 22px; letter-spacing: 8px; font-weight: bold; }
+.network-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 10px 0; }
+.network-card { padding: 15px; border: 2px solid #eee; border-radius: 14px; text-align: center; cursor: pointer; font-weight: bold; display:flex; align-items:center; justify-content:center; gap:8px; }
+.network-card.active { border-color: #1e3658; background: #eef0f5; }
+.dot { width:12px; height:12px; border-radius:50%; display:inline-block; }
+.plan-card { padding: 12px; border: 1px solid #eee; border-radius: 12px; margin: 6px 0; cursor: pointer; display: flex; justify-content: space-between; }
+.plan-card.active { border-color: #1e3658; background: #eef0f5; }
+.success-box { background: #e8f5e9; padding: 20px; border-radius: 16px; text-align: center; }
+.beneficiary-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid #eee; gap: 8px; }
+.small-btn { padding: 8px 12px; border-radius: 10px; border: none; cursor: pointer; font-weight: bold; }
+.stat-row { display: flex; gap: 10px; }
+.stat { flex: 1; background: white; padding: 14px; border-radius: 16px; text-align: center; }
+.receipt-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #f0f0f0; font-size: 14px; text-align: left; }
+.virtual-card { background: linear-gradient(135deg,#1e3658,#3a5a84); color: white; padding: 22px; border-radius: 20px; margin-bottom: 12px; }
+.virtual-card.frozen { background: linear-gradient(135deg,#555,#888); }
+.vc-num { font-size: 20px; letter-spacing: 2px; margin: 18px 0 12px; font-weight: bold; }
+.vc-row { display: flex; justify-content: space-between; font-size: 13px; }
+.vc-label { font-size: 10px; opacity: 0.7; }
+.bill-chip.active { background: #00a651; color: white; border-color: #00a651; }
+.progress { height: 12px; background: #eee; border-radius: 10px; overflow: hidden; margin: 10px 0; }
+.progress-bar { height: 100%; background: #00a651; width: 0%; transition: 0.3s; }
+.icon { width:20px; height:20px; vertical-align:middle; }
+.icon-lg { width:52px; height:52px; }
+.bell-wrap { position: relative; cursor: pointer; }
+.badge { position: absolute; top: -6px; right: -8px; background: #e53935; color: white; font-size: 10px; font-weight: bold; min-width: 18px; height: 18px; border-radius: 10px; display: flex; align-items: center; justify-content: center; padding: 0 4px; }
+.nav-badge { position: absolute; top: -2px; right: 12px; background: #e53935; color: white; font-size: 10px; font-weight: bold; min-width: 17px; height: 17px; border-radius: 10px; display: flex; align-items: center; justify-content: center; padding: 0 4px; }
+.notif-item { display:flex; gap:10px; padding:12px 0; border-bottom:1px solid #f0f0f0; cursor:pointer; }
+.notif-item.unread { background:#eef0f5; border-radius:12px; padding:12px 8px; }
+.notif-icon { width:38px; height:38px; border-radius:50%; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+.switch { width:52px; height:28px; background:#ccc; border-radius:20px; position:relative; cursor:pointer; transition:0.2s; flex-shrink:0; }
+.switch::after { content:""; position:absolute; top:3px; left:3px; width:22px; height:22px; background:white; border-radius:50%; transition:0.2s; }
+.switch.on { background:#00a651; }
+.switch.on::after { left:27px; }
+body.dark { background:#0f1420; }
+body.dark .phone { background:#0f1420; color:#e6e9f0; }
+body.dark .card, body.dark .login-card, body.dark .modal, body.dark .actions, body.dark .stat, body.dark .menu-item, body.dark .bottom-nav { background:#1a2233; color:#e6e9f0; border-color:#2a3550; }
+body.dark input, body.dark select, body.dark .bank-chip, body.dark .network-card, body.dark .plan-card, body.dark .auth-tab { background:#232e45; color:#e6e9f0; border-color:#2a3550; }
+body.dark .page-title { color:#fff; }
+body.dark .trans-item, body.dark .receipt-row { border-color:#2a3550; }
+body.dark .bottom-nav { border-color:#2a3550; }
+body.dark .btn-light { background:#232e45; color:#fff; }
+</style>
+</head>
+<body>
+<div class="phone">
+<svg style="display:none">
+<symbol id="i-home" viewBox="0 0 24 24"><path fill="currentColor" d="M12 3l9 8h-3v9h-5v-6H11v6H6v-9H3z"/></symbol>
+<symbol id="i-send" viewBox="0 0 24 24"><path fill="currentColor" d="M2 21l21-9L2 3v7l15 2-15 2z"/></symbol>
+<symbol id="i-phone" viewBox="0 0 24 24"><path fill="currentColor" d="M6 2h12a2 2 0 012 2v16a2 2 0 01-2 2H6a2 2 0 01-2-2V4a2 2 0 012-2zm6 18a1.5 1.5 0 100-3 1.5 1.5 0 000 3zM7 5h10v12H7z"/></symbol>
+<symbol id="i-globe" viewBox="0 0 24 24"><path fill="currentColor" d="M12 2a10 10 0 100 20 10 10 0 000-20zm0 2a8 8 0 110 16 8 8 0 010-16zm-1 2.5c-.8 1-1.3 2.5-1.4 4h2.8c-.1-1.5-.6-3-1.4-4zM12 18.5c.8-1 1.3-2.5 1.4-4H10.6c.1 1.5.6 3 1.4 4zM4.5 10h3.1c.1-1.7.6-3.2 1.3-4.5A8 8 0 004.5 10zm11.6 0h3.4a8 8 0 00-5.4-4.5c.7 1.3 1.2 2.8 1.3 4.5zM7.6 14H4.5a8 8 0 005.4 4.5c-.7-1.3-1.2-2.8-1.3-4.5zm8.8 0c-.1 1.7-.6 3.2-1.3 4.5A8 8 0 0019.5 14z"/></symbol>
+<symbol id="i-bill" viewBox="0 0 24 24"><path fill="currentColor" d="M6 2h12a2 2 0 012 2v16a2 2 0 01-2 2H6a2 2 0 01-2-2V4a2 2 0 012-2zm2 4v2h8V6H8zm0 4v2h8v-2H8zm0 4v2h5v-2H8z"/></symbol>
+<symbol id="i-card" viewBox="0 0 24 24"><path fill="currentColor" d="M20 4H4a2 2 0 00-2 2v12a2 2 0 002 2h16a2 2 0 002-2V6a2 2 0 00-2-2zM4 8h16v2H4V8zm0 6h6v2H4v-2z"/></symbol>
+<symbol id="i-user" viewBox="0 0 24 24"><path fill="currentColor" d="M12 12a5 5 0 100-10 5 5 0 000 10zm0 2c-4 0-8 2-8 5v1h16v-1c0-3-4-5-8-5z"/></symbol>
+<symbol id="i-eye" viewBox="0 0 24 24"><path fill="currentColor" d="M12 5C6 5 1.5 11 1.5 12S6 19 12 19s10.5-6 10.5-7S18 5 12 5zm0 11a4 4 0 110-8 4 4 0 010 8zm0-6a2 2 0 100 4 2 2 0 000-4z"/></symbol>
+<symbol id="i-lock" viewBox="0 0 24 24"><path fill="currentColor" d="M12 2a5 5 0 00-5 5v3H6a2 2 0 00-2 2v8a2 2 0 002 2h12a2 2 0 002-2v-8a2 2 0 00-2-2h-1V7a5 5 0 00-5-5zm-3 8V7a3 3 0 116 0v3H9z"/></symbol>
+<symbol id="i-save" viewBox="0 0 24 24"><path fill="currentColor" d="M12 2l7 4v6c0 5-3 8-7 10-4-2-7-5-7-10V6zM11 16l4-4-1.4-1.4L11 13.2l-1.6-1.6L8 13z"/></symbol>
+<symbol id="i-check" viewBox="0 0 24 24"><path fill="currentColor" d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4z"/></symbol>
+<symbol id="i-tv" viewBox="0 0 24 24"><path fill="currentColor" d="M21 3H3a2 2 0 00-2 2v11a2 2 0 002 2h7v2h-2v2h8v-2h-2v-2h7a2 2 0 002-2V5a2 2 0 00-2-2zM3 16V5h18v11H3z"/></symbol>
+<symbol id="i-bulb" viewBox="0 0 24 24"><path fill="currentColor" d="M12 2a7 7 0 00-4 12.7V17h8v-2.3A7 7 0 0012 2zM9 18h6v1H9v-1zm0 3h6v1H9v-1z"/></symbol>
+<symbol id="i-drop" viewBox="0 0 24 24"><path fill="currentColor" d="M12 2S6 10 6 14a6 6 0 0012 0c0-4-6-12-6-12z"/></symbol>
+<symbol id="i-wifi" viewBox="0 0 24 24"><path fill="currentColor" d="M12 5C7 5 2.5 7.5 1 11l2 1C4.2 9.3 7.8 8 12 8s7.8 1.3 9 4l2-1c-1.5-3.5-6-6-11-6zM12 11c-2.8 0-5.2 1-6.5 2.5L7 15c1-1 2.4-1.5 5-1.5s4 .5 5 1.5l1.5-1.5C17.2 12 14.8 11 12 11zm0 6a3 3 0 100 6 3 3 0 000-6z"/></symbol>
+<symbol id="i-school" viewBox="0 0 24 24"><path fill="currentColor" d="M12 3L1 8l11 5 9-4v6h2V8L12 3zm-7 9v4c0 1.5 3 3 7 3s7-1.5 7-3v-4l-7 3-7-3z"/></symbol>
+<symbol id="i-bell" viewBox="0 0 24 24"><path fill="currentColor" d="M12 2a5 5 0 00-5 5v4l-1 3h12l-1-3V7a5 5 0 00-5-5zm-3 17a2 2 0 004 0H9z"/></symbol>
+<symbol id="i-moon" viewBox="0 0 24 24"><path fill="currentColor" d="M21 12.8A9 9 0 1111.2 3 7 7 0 0021 12.8z"/></symbol>
+<symbol id="i-pdf" viewBox="0 0 24 24"><path fill="currentColor" d="M6 2h8l4 4v16H6V2zm2 4v2h8V6h-8zm0 4v2h8v-2H8zm0 4v2h5v-2H8zM14 2v4h4"/></symbol>
+<symbol id="i-shield" viewBox="0 0 24 24"><path fill="currentColor" d="M12 2l7 3v6c0 5-3 8-7 10-4-2-7-5-7-10V5zM11 16l4-4-1.4-1.4L11 13.2l-1.6-1.6L8 13z"/></symbol>
+<symbol id="i-history" viewBox="0 0 24 24"><path fill="currentColor" d="M13 3a9 9 0 00-9 9H1l4 4 4-4H6a7 7 0 117-7v2zM12 7v5l3 3 1-1-2.5-2.5V7z"/></symbol>
+<symbol id="i-paymora" viewBox="0 0 120 90"><path fill="#1e3658" d="M18 85V35a35 35 0 0170 0V55H68V35a15 15 0 00-30 0V85H18z"/><path fill="#b8c0cc" d="M38 85V55a20 20 0 0140 0V45h20a30 30 0 01-30 30H38z" opacity="0.9"/><circle cx="18" cy="38" r="11" fill="#1e3658" stroke="#c0c8d0" stroke-width="3"/><circle cx="36" cy="20" r="11" fill="#1e3658" stroke="#c0c8d0" stroke-width="3"/><circle cx="62" cy="12" r="11" fill="#1e3658" stroke="#c0c8d0" stroke-width="3"/><circle cx="88" cy="20" r="11" fill="#1e3658" stroke="#c0c8d0" stroke-width="3"/><circle cx="102" cy="42" r="11" fill="#1e3658" stroke="#c0c8d0" stroke-width="3"/></symbol>
+</svg>
+
+<div id="loginPage">
+  <div class="login-card">
+    <img src="logo.png" class="logo-img" onerror="this.style.display='none'; document.getElementById('svgLogo').style.display='block';" />
+    <div id="svgLogo" style="display:none; width:110px; margin:0 auto"><svg viewBox="0 0 120 90" style="width:100%"><use href="#i-paymora"/></svg></div>
+    <h1 style="color:#1e3658">PayMora <span style="font-weight:400; font-size:16px; letter-spacing:4px">BANK</span></h1>
+    <p style="font-size:12px; color:gray"><span id="backendStatus" style="color:#c62828"></span></p>
+    <div class="auth-tabs">
+      <div id="tabLogin" class="auth-tab active" onclick="showAuth('login')">Login</div>
+      <div id="tabSignup" class="auth-tab" onclick="showAuth('signup')">Create Account</div>
+    </div>
+    <div id="authLogin">
+      <input id="username" placeholder="Username" />
+      <input id="pin" type="password" placeholder="PIN" maxlength="4" />
+      <button class="btn" onclick="login()"><svg class="icon"><use href="#i-lock"/></svg> Login to PayMora</button>
+      <p style="font-size:11px; color:gray; margin-top:10px"></p>
+    </div>
+    <div id="authSignup" class="hidden">
+      <input id="suFullName" placeholder="Full Name e.g. Musa Ibrahim" />
+      <input id="suUsername" placeholder="Choose Username e.g. musa" />
+      <input id="suPhone" placeholder="Phone e.g. 08031234567" maxlength="11" />
+      <input id="suPin" type="password" placeholder="Create PIN (4 digits)" maxlength="4" />
+      <input id="suPin2" type="password" placeholder="Confirm PIN" maxlength="4" />
+      <button class="btn btn-green" onclick="signup()">Create My PayMora Account</button>
+      <p id="signupMsg" style="font-weight:bold; margin-top:10px"></p>
+    </div>
+  </div>
+</div>
+
+<div id="mainApp" class="hidden">
+  <div id="page-home">
+    <div class="header">
+      <div class="header-top">
+        <div style="display:flex; gap:10px; align-items:center">
+          <img src="logo.png" style="width:38px; height:38px; border-radius:10px; background:white; object-fit:contain" onerror="this.style.display='none'" />
+          <div><b>Hi, <span class="userFirstName">Ali</span></b><br><small>Welcome back • PayMora Bank</small></div>
+        </div>
+        <div style="display:flex; gap:16px; align-items:center">
+          <div class="bell-wrap" onclick="goTo('notifications')"><svg class="icon" style="color:white; width:24px; height:24px"><use href="#i-bell"/></svg><span id="notifBadge" class="badge hidden">0</span></div>
+          <div style="cursor:pointer" onclick="toggleBalance()"><svg class="icon" style="color:white"><use href="#i-eye"/></svg></div>
+        </div>
+      </div>
+      <div class="balance-box"><small>Total Balance</small><h1>₦<span id="balance">0</span>.00</h1><div class="acc-num" onclick="copyAcc()">Account: <span id="myAccNum">-</span> • PayMora Bank • Tap to copy</div><div style="font-size:12px; margin-top:6px; opacity:0.8">Logged in as: <b id="myUsernameLabel">-</b> • <span style="cursor:pointer; text-decoration:underline" onclick="logout()">Switch Account</span></div></div>
+    </div>
+    <div class="actions">
+      <div class="action-item" onclick="goTo('transfer')"><div class="action-icon" style="background:#eef0f5; color:#1e3658"><svg><use href="#i-send"/></svg></div><span>Transfer</span></div>
+      <div class="action-item" onclick="goTo('airtime')"><div class="action-icon" style="background:#fff3e0; color:#ef6c00"><svg><use href="#i-phone"/></svg></div><span>Airtime</span></div>
+      <div class="action-item" onclick="goTo('data')"><div class="action-icon" style="background:#f3e5f5; color:#7b1fa2"><svg><use href="#i-globe"/></svg></div><span>Data</span></div>
+      <div class="action-item" onclick="goTo('bills')"><div class="action-icon" style="background:#ffebee; color:#c62828"><svg><use href="#i-bill"/></svg></div><span>Bills</span></div>
+      <div class="action-item" onclick="goTo('card')"><div class="action-icon" style="background:#e8eaf6; color:#283593"><svg><use href="#i-card"/></svg></div><span>Card</span></div>
+      <div class="action-item" onclick="goTo('savings')"><div class="action-icon" style="background:#e8f5e9; color:#00a651"><svg><use href="#i-save"/></svg></div><span>Savings</span></div>
+    </div>
+    <div class="section"><div class="stat-row"><div class="stat"><small style="color:gray">Spent Today</small><br><b id="todaySpent" style="color:#d32f2f">₦0</b></div><div class="stat"><small style="color:gray">Savings</small><br><b id="homeSavings" style="color:#00a651">₦0</b></div><div class="stat"><small style="color:gray">Transactions</small><br><b id="totalTxns">0</b></div></div></div>
+    <div class="section" style="padding-top:0"><div class="card"><h3>Recent Transactions</h3><div id="recentHistory"></div><p onclick="goTo('history')" style="text-align:center; color:#1e3658; font-weight:bold; margin-top:10px; cursor:pointer">View All →</p></div></div>
+  </div>
+  <div id="page-transfer" class="hidden"><div class="page-title" onclick="goTo('home')">← Transfer Money</div><div class="section"><div class="card"><p style="font-size:13px; color:gray">Select Bank</p><div class="bank-list"><div class="bank-chip active" onclick="selectBank(this,'PayMora')">PayMora</div><div class="bank-chip" onclick="selectBank(this,'OPay')">OPay</div><div class="bank-chip" onclick="selectBank(this,'PalmPay')">PalmPay</div><div class="bank-chip" onclick="selectBank(this,'GTBank')">GTBank</div><div class="bank-chip" onclick="selectBank(this,'FirstBank')">FirstBank</div></div><label>Account Number</label><input id="accountNumber" placeholder="Type PayMora account number" maxlength="10" oninput="lookupName()" /><div id="nameBox" class="name-box"></div><div id="nameError" class="name-error">Account not found</div><label>Amount</label><input id="amount" type="number" placeholder="₦ 0.00" /><label>Narration</label><input id="narration" placeholder="e.g. For food" /><button id="sendBtn" class="btn" onclick="askPin('transfer')" disabled><svg class="icon"><use href="#i-send"/></svg> Send Money</button></div></div></div>
+  <div id="page-airtime" class="hidden"><div class="page-title" onclick="goTo('home')">← Buy Airtime</div><div class="section"><div class="card"><p><b>Select Network</b></p><div class="network-grid"><div class="network-card" id="net-MTN" onclick="selectNetwork('MTN')"><span class="dot" style="background:#ffcc00"></span> MTN</div><div class="network-card" id="net-Glo" onclick="selectNetwork('Glo')"><span class="dot" style="background:#2e7d32"></span> Glo</div><div class="network-card" id="net-Airtel" onclick="selectNetwork('Airtel')"><span class="dot" style="background:#d32f2f"></span> Airtel</div><div class="network-card" id="net-9mobile" onclick="selectNetwork('9mobile')"><span class="dot" style="background:#388e3c"></span> 9mobile</div></div><label>Phone Number</label><input id="airtimePhone" placeholder="e.g. 08031234567" maxlength="11" /><label>Amount</label><input id="airtimeAmount" type="number" placeholder="₦ 100 - ₦10,000" /><button class="btn" onclick="askPin('airtime')"><svg class="icon"><use href="#i-phone"/></svg> Buy Airtime</button></div></div></div>
+  <div id="page-data" class="hidden"><div class="page-title" onclick="goTo('home')">← Buy Data</div><div class="section"><div class="card"><p><b>Select Network</b></p><div class="network-grid"><div class="network-card" id="dnet-MTN" onclick="selectDataNetwork('MTN')"><span class="dot" style="background:#ffcc00"></span> MTN</div><div class="network-card" id="dnet-Glo" onclick="selectDataNetwork('Glo')"><span class="dot" style="background:#2e7d32"></span> Glo</div><div class="network-card" id="dnet-Airtel" onclick="selectDataNetwork('Airtel')"><span class="dot" style="background:#d32f2f"></span> Airtel</div><div class="network-card" id="dnet-9mobile" onclick="selectDataNetwork('9mobile')"><span class="dot" style="background:#388e3c"></span> 9mobile</div></div><label>Phone Number</label><input id="dataPhone" placeholder="e.g. 08031234567" maxlength="11" /><p><b>Select Data Plan</b></p><div id="dataPlans"></div><button class="btn" onclick="askPin('data')"><svg class="icon"><use href="#i-globe"/></svg> Buy Data</button></div></div></div>
+  <div id="page-bills" class="hidden"><div class="page-title" onclick="goTo('home')">← Pay Bills</div><div class="section"><div class="card"><p><b>Bill Type</b></p><div class="bank-list"><div class="bank-chip bill-chip active" onclick="selectBill(this,'DSTV')"><svg class="icon"><use href="#i-tv"/></svg> DSTV</div><div class="bank-chip bill-chip" onclick="selectBill(this,'GOtv')"><svg class="icon"><use href="#i-tv"/></svg> GOtv</div><div class="bank-chip bill-chip" onclick="selectBill(this,'PHCN')"><svg class="icon"><use href="#i-bulb"/></svg> PHCN</div><div class="bank-chip bill-chip" onclick="selectBill(this,'Water')"><svg class="icon"><use href="#i-drop"/></svg> Water</div><div class="bank-chip bill-chip" onclick="selectBill(this,'Internet')"><svg class="icon"><use href="#i-wifi"/></svg> Internet</div><div class="bank-chip bill-chip" onclick="selectBill(this,'School')"><svg class="icon"><use href="#i-school"/></svg> School Fee</div></div><label id="billIdLabel">Smartcard Number</label><input id="billCustomerId" placeholder="e.g. 1234567890" /><label>Amount</label><input id="billAmount" type="number" placeholder="₦ 0.00" /><div style="display:flex; gap:6px; flex-wrap:wrap; margin:8px 0" id="billQuick"></div><p id="billHint" style="font-size:12px; color:gray"></p><button class="btn btn-green" onclick="askPin('bills')"><svg class="icon"><use href="#i-check"/></svg> Pay Bill</button></div><div class="card"><h3>Recent Bill Payments</h3><div id="billHistory"></div></div></div></div>
+  <div id="page-card" class="hidden"><div class="page-title" onclick="goTo('home')">← My Card</div><div class="section"><div id="virtualCardBox" class="virtual-card"><div style="display:flex; justify-content:space-between; align-items:center"><span style="display:flex; gap:8px; align-items:center"><svg style="width:28px; height:22px"><use href="#i-paymora"/></svg><b>PayMora</b></span><span>VISA</span></div><div class="vc-num" id="cardNumberText">5399 •••• •••• 8101</div><div class="vc-row"><div><div class="vc-label">CARD HOLDER</div><b id="cardHolderName">ALI IBRAHIM</b></div><div><div class="vc-label">EXPIRES</div><b>11/29</b></div><div><div class="vc-label">CVV</div><b id="cardCvvText">•••</b></div></div><p id="cardStatusText" style="margin-top:12px; font-size:12px; background:rgba(255,255,255,0.2); display:inline-block; padding:5px 10px; border-radius:20px">Active</p></div><div class="card"><button id="freezeBtn" class="btn btn-red" onclick="toggleFreeze()" style="margin-top:12px">Freeze Card</button></div><div class="card"><h3>Card Details</h3><div class="receipt-row"><span>Card Number</span><b id="cardFullNumber">-</b></div><div class="receipt-row"><span>Holder</span><b class="userFullName">-</b></div><div class="receipt-row"><span>Linked Account</span><b id="cardAccNum">-</b></div><div class="receipt-row"><span>Balance</span><b>₦<span class="balanceText">0</span></b></div><div class="receipt-row"><span>Status</span><b id="cardStatusRow" style="color:#00a651">Active</b></div></div></div></div>
+  <div id="page-savings" class="hidden"><div class="page-title" onclick="goTo('home')">← Savings Vault</div><div class="section"><div class="card" style="background:#1e3658; color:white"><small>Total Saved</small><h1 style="font-size:30px">₦<span id="savingsBalance">0</span></h1><p style="font-size:13px; opacity:0.8">Target: ₦<span id="savingsTargetText">0</span> • <span id="savingsPctText">0%</span></p><div class="progress" style="background:rgba(255,255,255,0.2)"><div id="savingsBar" class="progress-bar" style="background:#c0c8d0"></div></div></div><div class="card"><h3>Create / Update Goal</h3><label>Goal Name</label><input id="savGoalName" placeholder="e.g. New Phone" /><label>Target Amount</label><input id="savGoalTarget" type="number" placeholder="e.g. 50000" /><button class="btn" onclick="saveGoal()">Save Goal</button><p id="goalNameText" style="text-align:center; margin-top:8px; font-weight:bold; color:#1e3658"></p></div><div class="card"><h3>Add Money</h3><label>Amount to Save</label><input id="savDeposit" type="number" placeholder="₦ 0.00" /><button class="btn btn-green" onclick="askPin('savings_deposit')">Deposit to Savings</button><label style="margin-top:14px; display:block">Amount to Withdraw</label><input id="savWithdraw" type="number" placeholder="₦ 0.00" /><button class="btn btn-light" onclick="askPin('savings_withdraw')">Withdraw from Savings</button></div><div class="card"><h3>Savings History</h3><div id="savingsHistory"></div></div></div></div>
+  <div id="page-changepin" class="hidden"><div class="page-title" onclick="goTo('me')">← Change PIN</div><div class="section"><div class="card"><label>Old PIN</label><input id="oldPin" type="password" maxlength="4" placeholder="••••" style="text-align:center; letter-spacing:8px" /><label>New PIN (4 digits)</label><input id="newPin" type="password" maxlength="4" placeholder="••••" style="text-align:center; letter-spacing:8px" /><label>Confirm New PIN</label><input id="confirmNewPin" type="password" maxlength="4" placeholder="••••" style="text-align:center; letter-spacing:8px" /><button class="btn btn-green" onclick="changePin()">Update PIN</button><p id="changePinMsg" style="text-align:center; font-weight:bold; margin-top:10px"></p></div></div></div>
+  <div id="page-notifications" class="hidden"><div class="page-title" onclick="goTo('home')">← Alerts</div><div class="section"><div class="card" style="display:flex; justify-content:space-between; align-items:center"><b><span id="notifCountText">0</span> Notifications</b><button class="small-btn" style="background:#1e3658; color:white" onclick="markAllRead()">Mark All Read</button></div><div class="card"><div id="notifList"></div></div></div></div>
+  <div id="page-history" class="hidden"><div class="page-title" onclick="goTo('home')">← Transaction History</div><div class="section"><div class="card"><input id="historySearch" placeholder="Search transactions..." oninput="loadHistory()" /><div id="fullHistory"></div></div></div></div>
+  <div id="page-me" class="hidden"><div class="profile-header"><img src="logo.png" style="width:90px; border-radius:14px; background:white; padding:6px; margin-bottom:10px" onerror="this.style.display='none'" /><h2 class="userFullName">-</h2><p style="opacity:0.8; font-size:13px"><span id="meAccNum">-</span> • PayMora Bank</p></div><div style="padding-top:15px"><div class="menu-item"><span style="display:flex; gap:10px; align-items:center"><svg><use href="#i-card"/></svg> My Balance</span><b>₦<span class="balanceText">0</span></b></div><div class="menu-item" onclick="toggleDarkMode()"><span style="display:flex; gap:10px; align-items:center"><svg><use href="#i-moon"/></svg> Dark Mode</span><div id="darkSwitch" class="switch"></div></div><div class="menu-item" onclick="goTo('notifications')"><span style="display:flex; gap:10px; align-items:center"><svg><use href="#i-bell"/></svg> Alerts</span><span id="meNotifCount" style="background:#e53935; color:white; padding:2px 8px; border-radius:10px; font-size:12px">0</span></div><div class="menu-item" onclick="goTo('card')"><span style="display:flex; gap:10px; align-items:center"><svg><use href="#i-card"/></svg> My Card</span><span>›</span></div><div class="menu-item" onclick="goTo('changepin')"><span style="display:flex; gap:10px; align-items:center"><svg><use href="#i-lock"/></svg> Change PIN</span><span>›</span></div><div class="menu-item" onclick="fundMe()"><span>Fund My Account (+₦10,000 Demo)</span><span>›</span></div><div class="menu-item" onclick="switchAccount()" style="color:#1e3658; font-weight:bold"><span>Switch Account / Another Person Login</span><span>›</span></div><div class="menu-item" onclick="logout()" style="color:red"><span>Logout</span><span>›</span></div></div></div>
+  <div class="bottom-nav">
+    <div class="nav-item active" id="nav-home" onclick="goTo('home')"><svg><use href="#i-home"/></svg>Home</div>
+    <div class="nav-item" id="nav-transfer" onclick="goTo('transfer')"><svg><use href="#i-send"/></svg>Transfer</div>
+    <div class="nav-item" id="nav-bills" onclick="goTo('bills')"><svg><use href="#i-bill"/></svg>Bills</div>
+    <div class="nav-item" id="nav-card" onclick="goTo('card')"><svg><use href="#i-card"/></svg>Card</div>
+    <div class="nav-item" id="nav-savings" onclick="goTo('savings')"><svg><use href="#i-shield"/></svg>Savings</div>
+    <div class="nav-item" id="nav-notifications" onclick="goTo('notifications')"><svg><use href="#i-bell"/></svg>Alerts<span id="navNotifBadge" class="nav-badge hidden">0</span></div>
+    <div class="nav-item" id="nav-airtime" onclick="goTo('airtime')"><svg><use href="#i-phone"/></svg>Airtime</div>
+    <div class="nav-item" id="nav-data" onclick="goTo('data')"><svg><use href="#i-globe"/></svg>Data</div>
+    <div class="nav-item" id="nav-history" onclick="goTo('history')"><svg><use href="#i-history"/></svg>History</div>
+    <div class="nav-item" id="nav-me" onclick="goTo('me')"><svg><use href="#i-user"/></svg>Me</div>
+  </div>
+</div>
+<div id="pinModal" class="modal-overlay hidden"><div class="modal"><h3>Enter PIN to Confirm</h3><p id="pinConfirmText">Confirm</p><input id="confirmPin" type="password" class="pin-input" placeholder="••••" maxlength="4" /><p id="pinError" style="color:red; font-size:13px; display:none">Wrong PIN! Try again.</p><button class="btn" onclick="confirmSend()">Confirm & Pay</button><button class="btn" style="background:#eee; color:#333" onclick="closePinModal()">Cancel</button></div></div>
+<div id="successModal" class="modal-overlay hidden"><div class="modal"><div class="success-box"><div><svg class="icon-lg" style="color:#00a651"><use href="#i-check"/></svg></div><h2>Transaction Successful!</h2><p id="successText" style="margin:10px 0"></p><p style="font-size:12px; color:gray">Ref: <span id="refNum"></span></p></div><button class="btn" onclick="closeSuccess()">Done</button></div></div>
+<div id="receiptModal" class="modal-overlay hidden"><div class="modal"><h3>Receipt</h3><div id="receiptContent" style="margin:12px 0"></div><button class="btn" onclick="closeReceipt()">Close</button></div></div>
+</div>
+
+<script>
+const API = 'http://localhost:5000/api';
+let TOKEN = localStorage.getItem('paymoraToken') || '';
+let ME = null;
+let ALL_TXNS = [];
+let ALL_NOTIFS = [];
+let currentRecipient = null, selectedBank = 'PayMora';
+let pendingType = '', pendingAmount = 0, pendingDesc = '', pendingNarration = '', pendingRef = '';
+let selectedNetwork = '', selectedDataNetwork = '', selectedPlan = null, balanceHidden = false;
+let selectedBill = 'DSTV';
+let cvvShown = false, isDark = false;
+const dataPlansList = [{name:'500MB - 30 Days',price:500},{name:'1GB - 30 Days',price:1000},{name:'2GB - 30 Days',price:2000},{name:'5GB - 30 Days',price:5000},{name:'10GB - 30 Days',price:10000}];
+const billPresets = {"DSTV":[5000,9000,15000,21000],"GOtv":[3500,5500,7500,10500],"PHCN":[2000,5000,10000,20000],"Water":[1000,2000,5000],"Internet":[5000,10000,20000],"School":[10000,25000,50000]};
+
+async function api(path, method='GET', body){
+  const res = await fetch(API+path, { method, headers: {'Content-Type':'application/json','Authorization':'Bearer '+TOKEN}, body: body ? JSON.stringify(body) : undefined });
+  return res.json();
+}
+async function checkBackend(){
+  try { const r = await fetch(API+'/me', { headers: { Authorization: 'Bearer x' } }); document.getElementById('backendStatus').innerText = ''; document.getElementById('backendStatus').style.color = '#00a651'; }
+  catch(e){ document.getElementById('backendStatus').innerText = 'Backend OFF - Start npm start in VS Code'; document.getElementById('backendStatus').style.color = '#c62828'; }
+}
+checkBackend();
+
+function showAuth(mode){ document.getElementById('tabLogin').classList.toggle('active', mode==='login'); document.getElementById('tabSignup').classList.toggle('active', mode==='signup'); document.getElementById('authLogin').classList.toggle('hidden', mode!=='login'); document.getElementById('authSignup').classList.toggle('hidden', mode!=='signup'); }
+async function signup(){
+  const full = document.getElementById('suFullName').value.trim();
+  const un = document.getElementById('suUsername').value.toLowerCase().trim();
+  const phone = document.getElementById('suPhone').value.trim();
+  const pin = document.getElementById('suPin').value;
+  const pin2 = document.getElementById('suPin2').value;
+  const msg = document.getElementById('signupMsg'); msg.style.color = '#c62828';
+  if(!full || full.split(' ').length<2){ msg.innerText='Enter full name (First + Last)'; return; }
+  if(!un || un.length<3){ msg.innerText='Username must be 3+ letters'; return; }
+  if(!/^\d{4}$/.test(pin)){ msg.innerText='PIN must be 4 digits'; return; }
+  if(pin!==pin2){ msg.innerText='PINs do not match'; return; }
+  const data = await api('/signup','POST',{ fullName: full, username: un, phone, pin });
+  if(data.token){ TOKEN=data.token; localStorage.setItem('paymoraToken', TOKEN); msg.style.color='#00a651'; msg.innerText='Account created! Number: '+data.user.accountNumber+'. Logging you in...'; setTimeout(()=>enterApp(), 800); }
+  else msg.innerText = data.error || 'Signup failed - Is backend running?';
+}
+async function login(){
+  const username = document.getElementById('username').value.toLowerCase().trim();
+  const pin = document.getElementById('pin').value;
+  if(!username || !pin){ alert('Enter username and PIN'); return; }
+  const data = await api('/login','POST',{ username, pin });
+  if(data.token){ TOKEN=data.token; localStorage.setItem('paymoraToken', TOKEN); await enterApp(); }
+  else alert(data.error || 'Login failed - Is backend running? Did you do npm start?');
+}
+async function enterApp(){
+  ME = await api('/me');
+  if(!ME || ME.error){ alert('Session expired, login again'); logout(); return; }
+  refreshUserUI();
+  document.getElementById('loginPage').classList.add('hidden');
+  document.getElementById('mainApp').classList.remove('hidden');
+  await loadAll();
+  goTo('home');
+}
+async function loadAll(){
+  ME = await api('/me');
+  ALL_TXNS = await api('/transactions');
+  ALL_NOTIFS = await api('/notifications');
+  refreshUserUI(); updateBalances(); loadHistory(); renderPlans(); renderBillQuick(); updateCardUI(); updateSavingsUI(); loadNotifications();
+}
+function refreshUserUI(){
+  if(!ME) return;
+  document.querySelectorAll('.userFullName').forEach(e=>e.innerText=ME.fullName);
+  document.querySelectorAll('.userFirstName').forEach(e=>e.innerText=ME.fullName.split(' ')[0]);
+  document.getElementById('myUsernameLabel').innerText=ME.username;
+  document.getElementById('myAccNum').innerText=ME.accountNumber;
+  document.getElementById('meAccNum').innerText=ME.accountNumber;
+  document.getElementById('cardAccNum').innerText=ME.accountNumber;
+  document.getElementById('cardHolderName').innerText=ME.fullName.toUpperCase();
+  document.getElementById('cardFullNumber').innerText=ME.cardNumber || '-';
+  isDark = !!ME.darkMode; applyDarkMode();
+}
+function applyDarkMode(){ document.body.classList.toggle('dark', isDark); const sw=document.getElementById('darkSwitch'); if(sw) sw.classList.toggle('on', isDark); }
+function toggleDarkMode(){ isDark=!isDark; applyDarkMode(); }
+function updateBalances(){ const txt = balanceHidden ? '••••••' : ME.balance.toLocaleString(); document.getElementById('balance').innerText=txt; document.querySelectorAll('.balanceText').forEach(e=>e.innerText=txt); }
+function toggleBalance(){ balanceHidden=!balanceHidden; updateBalances(); }
+function copyAcc(){ const t=ME.accountNumber; if(navigator.clipboard) navigator.clipboard.writeText(t).then(()=>alert('Copied: '+t)); else alert(t); }
+function goTo(page){ ["home","transfer","airtime","data","history","me","bills","card","savings","changepin","notifications"].forEach(p=>{ const el=document.getElementById('page-'+p); if(el)el.classList.add('hidden'); const nav=document.getElementById('nav-'+p); if(nav)nav.classList.remove('active'); }); document.getElementById('page-'+page).classList.remove('hidden'); const nav=document.getElementById('nav-'+page); if(nav)nav.classList.add('active'); if(page==='home'||page==='history') loadAll(); if(page==='data') renderPlans(); if(page==='bills'){ renderBillQuick(); loadBillHistory(); } if(page==='card') updateCardUI(); if(page==='savings') updateSavingsUI(); if(page==='notifications') loadNotifications(); window.scrollTo(0,0); }
+function selectBank(el,bank){ document.querySelectorAll('.bank-chip:not(.bill-chip)').forEach(c=>c.classList.remove('active')); el.classList.add('active'); selectedBank=bank; lookupName(); }
+function selectBill(el,type){ document.querySelectorAll('.bill-chip').forEach(c=>c.classList.remove('active')); el.classList.add('active'); selectedBill=type; const labels={"DSTV":"Smartcard Number","GOtv":"IUC Number","PHCN":"Meter Number","Water":"Customer ID","Internet":"Account / Router ID","School":"Student ID / Name"}; document.getElementById('billIdLabel').innerText=labels[type]; renderBillQuick(); }
+function renderBillQuick(){ const arr=billPresets[selectedBill]||[1000,2000,5000]; document.getElementById('billQuick').innerHTML=arr.map(v=>`<button class="small-btn" onclick="document.getElementById('billAmount').value=${v}">₦${v.toLocaleString()}</button>`).join(''); document.getElementById('billHint').innerText='Paying '+selectedBill; }
+function loadBillHistory(){ const bills=ALL_TXNS.filter(h=>h.type==='bills'); const el=document.getElementById('billHistory'); if(!el) return; if(!bills.length) el.innerHTML="<p style='color:gray; text-align:center'>No bill payments yet</p>"; else el.innerHTML=bills.slice(0,5).map(h=>`<div class="trans-item"><div><b>${h.name}</b><br><small>${h.date}</small></div><div class="amount-neg">-₦${h.amount.toLocaleString()}</div></div>`).join(''); }
+function updateCardUI(){ const box=document.getElementById('virtualCardBox'); const btn=document.getElementById('freezeBtn'); const frozen=!!ME.cardFrozen; if(frozen){ box.classList.add('frozen'); btn.innerText='Unfreeze Card'; btn.style.background='#00a651'; document.getElementById('cardStatusText').innerText='Frozen'; document.getElementById('cardStatusRow').innerText='Frozen'; document.getElementById('cardStatusRow').style.color='#c62828'; } else { box.classList.remove('frozen'); btn.innerText='Freeze Card'; btn.style.background='#c62828'; document.getElementById('cardStatusText').innerText='Active'; document.getElementById('cardStatusRow').innerText='Active'; document.getElementById('cardStatusRow').style.color='#00a651'; } document.getElementById('cardCvvText').innerText=cvvShown?'123':'•••'; document.getElementById('cardNumberText').innerText=cvvShown?(ME.cardNumber||'-'):'5399 •••• •••• '+(ME.accountNumber||'').slice(6); }
+async function toggleFreeze(){ const r=await api('/card/freeze','POST',{}); if(r.cardFrozen!==undefined){ ME.cardFrozen=r.cardFrozen?1:0; updateCardUI(); alert(ME.cardFrozen?'Card frozen':'Card unfrozen'); } }
+function toggleCvv(){ cvvShown=!cvvShown; updateCardUI(); }
+function updateSavingsUI(){ document.getElementById('savingsBalance').innerText=ME.savingsBalance.toLocaleString(); document.getElementById('savingsTargetText').innerText=ME.savingsTarget.toLocaleString(); const pct=ME.savingsTarget>0?Math.min(100,Math.round(ME.savingsBalance/ME.savingsTarget*100)):0; document.getElementById('savingsPctText').innerText=pct+'%'; document.getElementById('savingsBar').style.width=pct+'%'; document.getElementById('goalNameText').innerText=ME.savingsGoal?('Goal: '+ME.savingsGoal):''; document.getElementById('homeSavings').innerText='₦'+ME.savingsBalance.toLocaleString(); const sav=ALL_TXNS.filter(h=>h.type && h.type.startsWith('savings')); const el=document.getElementById('savingsHistory'); if(!el) return; if(!sav.length) el.innerHTML="<p style='color:gray; text-align:center'>No savings yet</p>"; else el.innerHTML=sav.slice(0,10).map(h=>`<div class="trans-item"><div><b>${h.name}</b><br><small>${h.date}</small></div><div class="${h.amount<0?'amount-neg':'amount-pos'}">${h.amount<0?'-':'+'}₦${Math.abs(h.amount).toLocaleString()}</div></div>`).join(''); }
+async function saveGoal(){ const name=document.getElementById('savGoalName').value.trim(); const target=parseInt(document.getElementById('savGoalTarget').value); if(!name||!target){ alert('Enter goal name and target'); return; } const r=await api('/savings-goal','POST',{ goal: name, target }); if(r.ok){ ME.savingsGoal=name; ME.savingsTarget=target; updateSavingsUI(); alert('Goal saved: '+name); } }
+async function changePin(){ const oldP=document.getElementById('oldPin').value; const newP=document.getElementById('newPin').value; const conf=document.getElementById('confirmNewPin').value; const msg=document.getElementById('changePinMsg'); msg.style.color='#c62828'; if(newP!==conf){ msg.innerText='New PINs do not match'; return; } const r=await api('/change-pin','POST',{ oldPin: oldP, newPin: newP }); if(r.ok){ msg.style.color='#00a651'; msg.innerText='PIN changed successfully!'; } else msg.innerText=r.error||'Failed'; }
+function selectNetwork(net){ selectedNetwork=net; document.querySelectorAll('#page-airtime .network-card').forEach(c=>c.classList.remove('active')); document.getElementById('net-'+net).classList.add('active'); }
+function selectDataNetwork(net){ selectedDataNetwork=net; document.querySelectorAll('#page-data .network-card').forEach(c=>c.classList.remove('active')); document.getElementById('dnet-'+net).classList.add('active'); }
+function renderPlans(){ document.getElementById('dataPlans').innerHTML=dataPlansList.map((p,i)=>`<div class="plan-card" id="plan-${i}" onclick="selectPlan(${i})"><span>${p.name}</span><b>₦${p.price.toLocaleString()}</b></div>`).join(''); }
+function selectPlan(i){ selectedPlan=dataPlansList[i]; document.querySelectorAll('.plan-card').forEach(c=>c.classList.remove('active')); document.getElementById('plan-'+i).classList.add('active'); }
+async function lookupName(){ const acc=document.getElementById('accountNumber').value; const nameBox=document.getElementById('nameBox'); const nameError=document.getElementById('nameError'); const sendBtn=document.getElementById('sendBtn'); nameBox.style.display='none'; nameError.style.display='none'; sendBtn.disabled=true; currentRecipient=null; if(acc.length===10){ nameBox.style.display='block'; nameBox.innerText='Checking...'; nameBox.style.background='#fff3e0'; nameBox.style.color='#e65100'; const r=await api('/lookup/'+acc); if(r.name){ currentRecipient=r; nameBox.style.background='#e8f5e9'; nameBox.style.color='#2e7d32'; nameBox.innerText=r.name+' - '+r.bank; sendBtn.disabled=false; } else { nameBox.style.display='none'; nameError.style.display='block'; } } }
+async function fundMe(){ const r=await api('/fund','POST',{ amount: 10000 }); if(r.ok){ await loadAll(); alert('Funded +₦10,000!'); } }
+function loadNotifications(){ const el=document.getElementById('notifList'); if(!el) return; const unread=ALL_NOTIFS.filter(n=>!n.isRead).length; [document.getElementById('notifBadge'), document.getElementById('navNotifBadge')].forEach(b=>{ if(!b) return; if(unread>0){ b.classList.remove('hidden'); b.innerText=unread; } else b.classList.add('hidden'); }); document.getElementById('meNotifCount').innerText=unread; document.getElementById('notifCountText').innerText=ALL_NOTIFS.length; if(!ALL_NOTIFS.length) el.innerHTML="<p style='color:gray; text-align:center; padding:20px'>No notifications yet.</p>"; else el.innerHTML=ALL_NOTIFS.map(n=>`<div class="notif-item ${n.isRead?'':'unread'}"><div class="notif-icon" style="background:#eef0f5; color:#1e3658"><svg class="icon"><use href="#i-bell"/></svg></div><div style="flex:1"><b>${n.title}</b><br><span style="font-size:13px; color:gray">${n.body}</span><br><small style="color:#999">${n.date}</small></div></div>`).join(''); }
+async function markAllRead(){ await api('/notifications/read-all','POST',{}); await loadAll(); }
+function askPin(type){
+  pendingType=type;
+  if(ME.cardFrozen && type!=='savings_withdraw'){ alert('Card is frozen. Unfreeze it first'); return; }
+  if(type==='transfer'){ const amount=parseInt(document.getElementById('amount').value); if(!currentRecipient){ alert('Enter valid account first'); return; } if(!amount||amount>ME.balance){ alert('Invalid amount or insufficient balance'); return; } pendingAmount=amount; pendingNarration=document.getElementById('narration').value.trim()||'Transfer'; pendingDesc='Transfer to '+currentRecipient.name; }
+  if(type==='airtime'){ const amount=parseInt(document.getElementById('airtimeAmount').value); const phone=document.getElementById('airtimePhone').value; if(!selectedNetwork){ alert('Select network first'); return; } if(!phone||phone.length<10){ alert('Enter valid phone'); return; } if(!amount||amount>ME.balance){ alert('Invalid amount'); return; } pendingAmount=amount; pendingDesc='Airtime '+selectedNetwork+' - '+phone; pendingNarration=pendingDesc; }
+  if(type==='data'){ const phone=document.getElementById('dataPhone').value; if(!selectedDataNetwork){ alert('Select network'); return; } if(!phone||phone.length<10){ alert('Enter valid phone'); return; } if(!selectedPlan){ alert('Select a data plan'); return; } if(selectedPlan.price>ME.balance){ alert('Insufficient balance'); return; } pendingAmount=selectedPlan.price; pendingDesc='Data '+selectedDataNetwork+' '+selectedPlan.name+' - '+phone; pendingNarration=pendingDesc; }
+  if(type==='bills'){ const amount=parseInt(document.getElementById('billAmount').value); const cid=document.getElementById('billCustomerId').value.trim(); if(!cid){ alert('Enter Smartcard / Meter ID'); return; } if(!amount||amount>ME.balance){ alert('Invalid amount'); return; } pendingAmount=amount; pendingDesc=selectedBill+' Bill - '+cid; pendingNarration=pendingDesc; }
+  if(type==='savings_deposit'){ const amount=parseInt(document.getElementById('savDeposit').value); if(!amount||amount>ME.balance){ alert('Invalid amount'); return; } pendingAmount=amount; pendingDesc='Savings Deposit'; pendingNarration=pendingDesc; }
+  if(type==='savings_withdraw'){ const amount=parseInt(document.getElementById('savWithdraw').value); if(!amount||amount>ME.savingsBalance){ alert('Invalid amount'); return; } pendingAmount=amount; pendingDesc='Savings Withdraw'; pendingNarration=pendingDesc; }
+  document.getElementById('pinConfirmText').innerText='You are paying ₦'+pendingAmount.toLocaleString()+' for '+pendingDesc;
+  document.getElementById('confirmPin').value=''; document.getElementById('pinError').style.display='none';
+  document.getElementById('pinModal').classList.remove('hidden');
+}
+function closePinModal(){ document.getElementById('pinModal').classList.add('hidden'); }
+async function confirmSend(){
+  const entered = document.getElementById('confirmPin').value;
+  // Verify PIN by trying a small check: we use change-pin logic? Instead, backend /pay and /transfer check balance, but PIN is login PIN.
+  // For demo security, we ask backend to verify via a login call with stored username
+  const verify = await api('/login','POST',{ username: ME.username, pin: entered });
+  if(!verify.token){ document.getElementById('pinError').style.display='block'; return; }
+  closePinModal();
+  let res;
+  if(pendingType==='transfer'){ res = await api('/transfer','POST',{ toAccount: document.getElementById('accountNumber').value, amount: pendingAmount, narration: pendingNarration }); }
+  else if(pendingType==='savings_deposit'){ res = await api('/pay','POST',{ type:'savings_deposit', amount: pendingAmount, description: pendingDesc, narration: pendingNarration }); }
+  else if(pendingType==='savings_withdraw'){ res = await api('/pay','POST',{ type:'savings_withdraw', amount: pendingAmount, description: pendingDesc, narration: pendingNarration }); }
+  else { res = await api('/pay','POST',{ type: pendingType, amount: pendingAmount, description: pendingDesc, narration: pendingNarration }); }
+  if(!res.ok){ alert(res.error||'Payment failed'); return; }
+  pendingRef = res.ref;
+  await loadAll();
+  document.getElementById('successText').innerText = pendingDesc+' - ₦'+pendingAmount.toLocaleString();
+  document.getElementById('refNum').innerText = pendingRef;
+  document.getElementById('successModal').classList.remove('hidden');
+  if(pendingType==='transfer'){ document.getElementById('accountNumber').value=''; document.getElementById('amount').value=''; document.getElementById('narration').value=''; document.getElementById('nameBox').style.display='none'; document.getElementById('sendBtn').disabled=true; }
+  if(pendingType==='airtime'){ document.getElementById('airtimePhone').value=''; document.getElementById('airtimeAmount').value=''; }
+  if(pendingType==='data'){ document.getElementById('dataPhone').value=''; selectedPlan=null; renderPlans(); }
+  if(pendingType==='bills'){ document.getElementById('billCustomerId').value=''; document.getElementById('billAmount').value=''; }
+  if(pendingType==='savings_deposit') document.getElementById('savDeposit').value='';
+  if(pendingType==='savings_withdraw') document.getElementById('savWithdraw').value='';
+}
+function closeSuccess(){ document.getElementById('successModal').classList.add('hidden'); goTo('home'); }
+function showReceipt(h){ document.getElementById('receiptContent').innerHTML=`<div class="receipt-row"><span>Transaction</span><b>${h.name}</b></div><div class="receipt-row"><span>Amount</span><b style="color:#d32f2f">-₦${Math.abs(h.amount).toLocaleString()}</b></div><div class="receipt-row"><span>Narration</span><span>${h.narration||'-'}</span></div><div class="receipt-row"><span>Date</span><span>${h.date}</span></div><div class="receipt-row"><span>Reference</span><b>${h.ref||'-'}</b></div><div class="receipt-row"><span>Status</span><b style="color:#00a651">Successful</b></div>`; document.getElementById('receiptModal').classList.remove('hidden'); }
+function closeReceipt(){ document.getElementById('receiptModal').classList.add('hidden'); }
+function loadHistory(){
+  const q=(document.getElementById('historySearch')?.value||'').toLowerCase();
+  const filtered=ALL_TXNS.filter(h=>!q||h.name.toLowerCase().includes(q)||(h.narration||'').toLowerCase().includes(q));
+  const today=new Date().toDateString();
+  const todayTotal=ALL_TXNS.filter(h=>new Date(h.date).toDateString()===today && h.amount>0).reduce((s,h)=>s+h.amount,0);
+  document.getElementById('todaySpent').innerText='₦'+todayTotal.toLocaleString();
+  document.getElementById('totalTxns').innerText=ALL_TXNS.length;
+  if(!filtered.length){ document.getElementById('recentHistory').innerHTML="<p style='color:gray; text-align:center'>No transactions yet</p>"; document.getElementById('fullHistory').innerHTML="<p style='color:gray; text-align:center'>No transactions yet</p>"; return; }
+  document.getElementById('recentHistory').innerHTML=filtered.slice(0,3).map((h,i)=>`<div class="trans-item" onclick="showReceiptByIndex(${i})"><div><b>${h.name}</b><br><small>${h.date} • ${h.narration||''}</small></div><div class="${h.amount<0?'amount-pos':'amount-neg'}">${h.amount<0?'+':'-'}₦${Math.abs(h.amount).toLocaleString()}</div></div>`).join('');
+  document.getElementById('fullHistory').innerHTML=filtered.map((h,i)=>`<div class="trans-item" onclick="showReceiptByIndex(${i})"><div><b>${h.name}</b><br><small>${h.date} • ${h.narration||''}</small></div><div class="${h.amount<0?'amount-pos':'amount-neg'}">${h.amount<0?'+':'-'}₦${Math.abs(h.amount).toLocaleString()}</div></div>`).join('');
+}
+function showReceiptByIndex(i){ const h=ALL_TXNS[i]; if(h) showReceipt(h); }
+function switchAccount(){ TOKEN=''; localStorage.removeItem('paymoraToken'); ME=null; document.getElementById('mainApp').classList.add('hidden'); document.getElementById('loginPage').classList.remove('hidden'); showAuth('login'); }
+function logout(){ switchAccount(); }
+// Auto-login if token exists
+(async()=>{ if(TOKEN){ try{ const me=await api('/me'); if(me && !me.error){ await enterApp(); } }catch(e){} } })();
+</script>
+</body>
+</html>

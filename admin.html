@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PayMora Admin - Owner Only</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Arial, sans-serif; }
+body { background: #0f1420; display: flex; justify-content: center; color: #111; }
+.phone { width: 100%; max-width: 500px; background: #f2f4f7; min-height: 100vh; padding: 20px; padding-bottom: 40px; }
+.hidden { display: none !important; }
+.card { background: white; padding: 18px; border-radius: 16px; margin-bottom: 12px; }
+input { width: 100%; padding: 13px; margin: 8px 0; border-radius: 12px; border: 1px solid #ddd; font-size: 14px; }
+.btn { width: 100%; padding: 13px; background: #1e3658; color: white; border: none; border-radius: 12px; font-weight: bold; cursor: pointer; margin-top: 10px; }
+.btn-green { background: #00a651; }
+.stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
+.stat { background: white; padding: 16px; border-radius: 16px; text-align: center; }
+.stat h2 { font-size: 22px; margin-top: 4px; }
+.user-row { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #eee; gap: 8px; }
+.txn-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #f0f0f0; font-size: 13px; gap: 8px; }
+.small-btn { padding: 6px 10px; border-radius: 8px; border: none; cursor: pointer; font-weight: bold; font-size: 12px; }
+</style>
+</head>
+<body>
+<div class="phone">
+  <div id="adminLogin">
+    <div style="text-align:center; margin: 20px 0">
+      <img src="logo.png" style="width:110px; border-radius:12px" onerror="this.style.display='none'">
+      <h1 style="color:#1e3658; margin-top:8px">PayMora Admin</h1>
+      <p style="color:#c62828; font-weight:bold; font-size:13px"></p>
+      <p style="font-size:12px; color:gray"></p>
+    </div>
+    <div class="card">
+      <input id="adminUser" placeholder="Admin Username">
+      <input id="adminPin" type="password" placeholder="Admin PIN" maxlength="4">
+      <input id="adminKey" type="password" placeholder="Admin Key">
+      <button class="btn" onclick="adminLogin()">Enter Admin Dashboard</button>
+      <p id="adminLoginMsg" style="text-align:center; color:red; font-weight:bold; margin-top:10px"></p>
+      <p style="font-size:11px; color:gray; text-align:center; margin-top:8px"><br></p>
+    </div>
+  </div>
+
+  <div id="adminDash" class="hidden">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px">
+      <div><h1 style="color:#1e3658">PayMora Admin</h1><p style="font-size:13px; color:gray">Welcome back, Ali - Owner</p></div>
+      <button class="small-btn" style="background:#c62828; color:white" onclick="adminLogout()">Logout</button>
+    </div>
+    <div class="stat-grid">
+      <div class="stat"><small>Total Users</small><h2 id="statUsers">0</h2></div>
+      <div class="stat"><small>Total Transactions</small><h2 id="statTxns">0</h2></div>
+      <div class="stat"><small>Total Balances</small><h2 style="color:#00a651" id="statBalance">N0</h2></div>
+      <div class="stat"><small>Total Savings</small><h2 style="color:#1e3658" id="statSavings">N0</h2></div>
+    </div>
+    <div class="card" style="background:#1e3658; color:white; text-align:center"><small>Total Money in PayMora Bank</small><h1 id="statTotal" style="font-size:30px">N0</h1><button class="btn btn-green" onclick="loadAdmin()" style="margin-top:10px">Refresh</button></div>
+    <div class="card">
+      <h3>Fund Any User (As Owner)</h3>
+      <input id="fundAcc" placeholder="User Account Number e.g. 8101234567" maxlength="10">
+      <input id="fundAmt" type="number" placeholder="Amount e.g. 5000">
+      <button class="btn btn-green" onclick="fundUser()">Fund User</button>
+      <p id="fundMsg" style="text-align:center; font-weight:bold; margin-top:8px"></p>
+    </div>
+    <div class="card">
+      <h3>All Users (<span id="userCount">0</span>)</h3>
+      <input id="userSearch" placeholder="Search name / username / account..." oninput="renderUsers()">
+      <div id="userList"></div>
+    </div>
+    <div class="card">
+      <h3>Recent Transactions (All Users)</h3>
+      <div id="txnList"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+const API = 'http://localhost:5000/api';
+let ADMIN_KEY = '';
+let ALL_USERS = [];
+let ALL_TXNS = [];
+
+async function adminLogin(){
+  const user = document.getElementById('adminUser').value.toLowerCase().trim();
+  const pin = document.getElementById('adminPin').value;
+  const key = document.getElementById('adminKey').value.trim();
+  const msg = document.getElementById('adminLoginMsg');
+  if(user !== 'ali' || pin !== '1234'){ msg.innerText = 'Wrong admin username or PIN. Only Ali can enter.'; return; }
+  if(key !== 'Ibracool'){ msg.innerText = 'Wrong Admin Key.'; return; }
+  const res = await fetch(API + '/admin/stats', { headers: { 'x-admin-key': key } });
+  const data = await res.json();
+  if(data.error){ msg.innerText = data.error; return; }
+  ADMIN_KEY = key;
+  localStorage.setItem('paymoraAdminKey', key);
+  document.getElementById('adminLogin').classList.add('hidden');
+  document.getElementById('adminDash').classList.remove('hidden');
+  await loadAdmin();
+}
+async function loadAdmin(){
+  const stats = await fetch(API + '/admin/stats', { headers: { 'x-admin-key': ADMIN_KEY } }).then(r=>r.json());
+  const users = await fetch(API + '/admin/users', { headers: { 'x-admin-key': ADMIN_KEY } }).then(r=>r.json());
+  const txns = await fetch(API + '/admin/transactions', { headers: { 'x-admin-key': ADMIN_KEY } }).then(r=>r.json());
+  document.getElementById('statUsers').innerText = stats.totalUsers;
+  document.getElementById('statTxns').innerText = stats.totalTxns;
+  document.getElementById('statBalance').innerText = 'N' + stats.totalBalance.toLocaleString();
+  document.getElementById('statSavings').innerText = 'N' + stats.totalSavings.toLocaleString();
+  document.getElementById('statTotal').innerText = 'N' + stats.totalMoney.toLocaleString();
+  ALL_USERS = users; ALL_TXNS = txns;
+  renderUsers();
+  document.getElementById('txnList').innerHTML = !txns.length ? '<p style="color:gray; text-align:center">No transactions yet</p>' : txns.slice(0,20).map(t=>`<div class="txn-row"><div><b>${t.name}</b><br><small>${t.date} - Ref ${t.ref}</small></div><div style="color:${t.amount<0?'#00a651':'#d32f2f'}; font-weight:bold">${t.amount<0?'+':'-'}N${Math.abs(t.amount).toLocaleString()}</div></div>`).join('');
+}
+function renderUsers(){
+  const q = (document.getElementById('userSearch').value||'').toLowerCase();
+  const filtered = ALL_USERS.filter(u => !q || u.fullName.toLowerCase().includes(q) || u.username.toLowerCase().includes(q) || u.accountNumber.includes(q));
+  document.getElementById('userCount').innerText = filtered.length;
+  document.getElementById('userList').innerHTML = !filtered.length ? '<p style="color:gray; text-align:center">No users found</p>' : filtered.map(u=>`<div class="user-row"><div><b>${u.fullName} (@${u.username})</b><br><small>${u.accountNumber} - ${u.phone||''} - Card ${u.cardNumber}</small><br><small>Joined: ${new Date(u.createdAt).toLocaleString()}</small></div><div style="text-align:right"><b style="color:#00a651">N${u.balance.toLocaleString()}</b><br><small>Savings N${u.savingsBalance.toLocaleString()}</small><br><button class="small-btn" style="background:#1e3658; color:white; margin-top:4px" onclick="quickFund('${u.accountNumber}')">Fund +</button></div></div>`).join('');
+}
+function quickFund(acc){ document.getElementById('fundAcc').value = acc; document.getElementById('fundAmt').focus(); window.scrollTo(0, 280); }
+async function fundUser(){
+  const acc = document.getElementById('fundAcc').value.trim();
+  const amt = document.getElementById('fundAmt').value;
+  const msg = document.getElementById('fundMsg');
+  const res = await fetch(API + '/admin/fund-user', { method: 'POST', headers: { 'Content-Type': 'application/json', 'x-admin-key': ADMIN_KEY }, body: JSON.stringify({ accountNumber: acc, amount: amt }) }).then(r=>r.json());
+  if(res.ok){ msg.style.color = 'green'; msg.innerText = 'Funded ' + res.user + ' +N' + amt + ' - New balance N' + res.newBalance.toLocaleString(); await loadAdmin(); }
+  else { msg.style.color = 'red'; msg.innerText = res.error || 'Failed'; }
+}
+function adminLogout(){ ADMIN_KEY=''; localStorage.removeItem('paymoraAdminKey'); document.getElementById('adminDash').classList.add('hidden'); document.getElementById('adminLogin').classList.remove('hidden'); }
+</script>
+</body>
+</html>
