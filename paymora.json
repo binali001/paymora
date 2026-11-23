@@ -1,0 +1,90 @@
+{
+  "users": [
+    {
+      "id": 1,
+      "fullName": "Ali Ibrahim",
+      "username": "ali",
+      "phone": "08031234567",
+      "pinHash": "$2a$10$mgBw7Djq.es3zDAQOECTjerxgrSr4.0ndzxpiJZezQzIF9kCtbyF6",
+      "accountNumber": "8101234567",
+      "balance": 90000,
+      "savingsBalance": 0,
+      "savingsTarget": 0,
+      "savingsGoal": "",
+      "cardNumber": "5399 1234 5678 8101",
+      "cardFrozen": 0,
+      "darkMode": 0,
+      "createdAt": "2026-11-23T19:25:09.092Z"
+    },
+    {
+      "id": 2,
+      "fullName": "Muhammad Tijjani Usman",
+      "username": "mome",
+      "phone": "08086895575",
+      "pinHash": "$2a$10$7j2CmrOsZEsnQmbmMl0bauE.ZCCyOi8KcGqMYGUyt4Ea5ZRVTzhSm",
+      "accountNumber": "8124803372",
+      "balance": 10000,
+      "savingsBalance": 0,
+      "savingsTarget": 0,
+      "savingsGoal": "",
+      "cardNumber": "5399 2480 8033 3372",
+      "cardFrozen": 0,
+      "darkMode": 0,
+      "createdAt": "2026-11-23T19:50:09.425Z"
+    }
+  ],
+  "transactions": [
+    {
+      "id": 1,
+      "userId": 1,
+      "type": "transfer",
+      "name": "Transfer to 8124803372",
+      "amount": 10000,
+      "narration": "Transfer",
+      "ref": "PM760874019",
+      "date": "2026-11-23T19:50:40.845Z"
+    },
+    {
+      "id": 2,
+      "userId": 2,
+      "type": "transfer_in",
+      "name": "Received from Ali Ibrahim",
+      "amount": -10000,
+      "narration": "Transfer",
+      "ref": "PM760874019",
+      "date": "2026-11-23T19:50:40.845Z"
+    }
+  ],
+  "notifications": [
+    {
+      "id": 1,
+      "userId": 2,
+      "title": "Welcome to PayMora Bank",
+      "body": "Welcome Muhammad! Your PayMora account 8124803372 is ready.",
+      "icon": "bell",
+      "isRead": 0,
+      "date": "2026-11-23T19:50:09.425Z"
+    },
+    {
+      "id": 2,
+      "userId": 2,
+      "title": "Money Received",
+      "body": "You received ₦10,000 from Ali Ibrahim",
+      "icon": "bell",
+      "isRead": 0,
+      "date": "2026-11-23T19:50:40.946Z"
+    },
+    {
+      "id": 3,
+      "userId": 1,
+      "title": "Transfer Successful",
+      "body": "You sent ₦10,000 to 8124803372 • Ref PM760874019",
+      "icon": "bell",
+      "isRead": 0,
+      "date": "2026-11-23T19:50:40.946Z"
+    }
+  ],
+  "nextUserId": 3,
+  "nextTxnId": 3,
+  "nextNotifId": 4
+}
