@@ -159,9 +159,9 @@ app.post('/api/admin/fund-user', (req, res) => {
   res.json({ ok: true, newBalance: user.balance, user: user.fullName });
 });
 // Serve Frontend files online
-app.use(express.static(path.join(__dirname, '../Frontend')));
+app.use(express.static(path.join(__dirname)));
 app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, '../Frontend/index.html'));
+  res.sendFile(path.join(__dirname, 'index.html'));
 });
 
 app.listen(PORT, () => console.log(`PayMora Backend running on http://localhost:${PORT}`));
