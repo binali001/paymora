@@ -163,5 +163,33 @@ app.use(express.static(path.join(__dirname)));
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'index.html'));
 });
+// Resolve Account Number - Paystack
+app.get('/api/resolve', async (req, res) => {
+  const { account_number, bank_code } = req.query;
+  if (!account_number || !bank_code) {
+    return res.json({ status: false, message: 'Account number and bank required' });
+  }
+  try {
+    const response = await fetch(`https://api.paystack.co/bank/resolve?account_number=${account_number}&bank_code=${bank_code}`, {
+      headers: { Authorization: `Bearer ${process.env.PAYSTACK_SECRET_KEY}` }
+    });
+    const data = await response.json();
+    res.json(data);
+  } catch (err) {
+    res.json({ status: false, message: 'Could not resolve account' });
+  }
+});
 
+// Get Bank List - Paystack
+app.get('/api/banks', async (req, res) => {
+  try {
+    const response = await fetch('https://api.paystack.co/bank?currency=NGN&perPage=100', {
+      headers: { Authorization: `Bearer ${process.env.PAYSTACK_SECRET_KEY}` }
+    });
+    const data = await response.json();
+    res.json(data);
+  } catch (err) {
+    res.json({ status: false, message: 'Could not load banks' });
+  }
+});
 app.listen(PORT, () => console.log(`PayMora Backend running on http://localhost:${PORT}`));
