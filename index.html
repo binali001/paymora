@@ -359,5 +359,42 @@ function logout(){ switchAccount(); }
 // Auto-login if token exists
 (async()=>{ if(TOKEN){ try{ const me=await api('/me'); if(me && !me.error){ await enterApp(); } }catch(e){} } })();
 </script>
+  <label>Select Bank</label>
+<select id="bankSelect" style="width:100%; padding:12px; margin:8px 0; border-radius:8px;">
+  <option>Loading banks...</option>
+</select>
+
+<label>Account Number</label>
+<input id="accountNumber" placeholder="Enter 10-digit account number" maxlength="10" style="width:100%; padding:12px; margin:8px 0; border-radius:8px;">
+
+<div id="resolvedName" style="color:green; font-weight:bold; margin:8px 0;"></div>
+
+<script>
+async function loadBanks() {
+  const r = await fetch('/api/banks');
+  const d = await r.json();
+  const sel = document.getElementById('bankSelect');
+  sel.innerHTML = '<option value="">Select Bank</option>';
+  d.data.forEach(b => {
+    sel.innerHTML += `<option value="${b.code}">${b.name}</option>`;
+  });
+}
+loadBanks();
+
+document.getElementById('accountNumber').addEventListener('input', async (e) => {
+  const acc = e.target.value;
+  const bank = document.getElementById('bankSelect').value;
+  if (acc.length === 10 && bank) {
+    document.getElementById('resolvedName').innerText = 'Checking...';
+    const r = await fetch(`/api/resolve?account_number=${acc}&bank_code=${bank}`);
+    const d = await r.json();
+    if (d.status) {
+      document.getElementById('resolvedName').innerText = d.data.account_name;
+    } else {
+      document.getElementById('resolvedName').innerText = 'Account not found';
+    }
+  }
+});
+</script>
 </body>
 </html>
