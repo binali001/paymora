@@ -200,17 +200,7 @@ body.dark .btn-light { background:#232e45; color:#fff; }
 <div id="successModal" class="modal-overlay hidden"><div class="modal"><div class="success-box"><div><svg class="icon-lg" style="color:#00a651"><use href="#i-check"/></svg></div><h2>Transaction Successful!</h2><p id="successText" style="margin:10px 0"></p><p style="font-size:12px; color:gray">Ref: <span id="refNum"></span></p></div><button class="btn" onclick="closeSuccess()">Done</button></div></div>
 <div id="receiptModal" class="modal-overlay hidden"><div class="modal"><h3>Receipt</h3><div id="receiptContent" style="margin:12px 0"></div><button class="btn" onclick="closeReceipt()">Close</button></div></div>
 </div>
-  <!-- Resolve Account Section -->
-<div id="checkAccountBox" style="display:none; position:fixed; top:50%; left:50%; transform:translate(-50%,-50%); background:white; padding:20px; border-radius:16px; width:90%; max-width:360px; box-shadow:0 10px 40px rgba(0,0,0,0.3); z-index:9999;">
-<h3 style="margin:0 0 10px;">Send Money - Check Account <span onclick="document.getElementById('checkAccountBox').style.display='none'" style="float:right; cursor:pointer;">✕</span></h3>
-  <label>Select Bank</label>
-  <select id="bankSelect" style="width:100%; box-sizing:border-box; padding:12px; margin:8px 0; border-radius:8px; display:block;">
-    <option>Loading banks...</option>
-  </select>
-  <label>Account Number</label>
-  <input id="accountNumber" placeholder="Enter 10-digit account number" maxlength="10" style="width:100%; box-sizing:border-box; padding:12px; margin:8px 0; border-radius:8px; display:block;">
-  <div id="resolvedName" style="color:green; font-weight:bold; margin:8px 0;"></div>
-</div>
+
 
 <script>
 const API = '/api';
@@ -369,41 +359,6 @@ function switchAccount(){ TOKEN=''; localStorage.removeItem('paymoraToken'); ME=
 function logout(){ switchAccount(); }
 // Auto-login if token exists
 (async()=>{ if(TOKEN){ try{ const me=await api('/me'); if(me && !me.error){ await enterApp(); } }catch(e){} } })();
-</script>
-  <script>
-async function loadBanks() {
-  try {
-    const r = await fetch('/api/banks');
-    const d = await r.json();
-    const sel = document.getElementById('bankSelect');
-    sel.innerHTML = '<option value="">Select Bank</option>';
-    d.data.forEach(b => {
-      sel.innerHTML += `<option value="${b.code}">${b.name}</option>`;
-    });
-  } catch(e) {
-    document.getElementById('bankSelect').innerHTML = '<option>Failed to load banks</option>';
-  }
-}
-loadBanks();
-
-document.getElementById('accountNumber').addEventListener('input', async (e) => {
-  const acc = e.target.value;
-  const bank = document.getElementById('bankSelect').value;
-  if (acc.length === 10 && bank) {
-    document.getElementById('resolvedName').innerText = 'Checking...';
-    const r = await fetch(`/api/resolve?account_number=${acc}&bank_code=${bank}`);
-    const d = await r.json();
-    document.getElementById('resolvedName').innerText = d.status ? d.data.account_name : 'Account not found';
-  }
-});
-
-// Show popup when you tap Transfer
-document.addEventListener('click', (e) => {
-  const t = e.target.closest('button, div, a');
-  if (t && t.innerText && t.innerText.toLowerCase().includes('transfer')) {
-    document.getElementById('checkAccountBox').style.display = 'block';
-  }
-});
 </script>
 </body>
 </html>
